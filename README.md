@@ -1,35 +1,11 @@
-# filesync
-A file sync tool to sync local files using webdav
 
-To install this software you may use the [PIP](https://realpython.com/what-is-pip/) package manager such as shown below
-```
-sudo pip install filesync
-```
-
-Use *sync_folder* as shown below to copy local files to cloud or visa verse
 
 ```
-from filesync.filesync import sync_folder
-
-cloud_uri="https://myuser:mypassword@webdav.cloud.."
-local = "/media/data"
-
-
-###############
-# sync from cloud
-
-print("** sync cloud homevideo -> local homevideo **")
-sync_folder(cloud + '/homevideo', local + '/homevideo', ignore_patterns=['*/~*'])
-
-print("** sync cloud family -> local family **")
-sync_folder(cloud + '/family', local + '/family', ignore_patterns=['*/~*'])
-
-
-
-###############
-# sync to cloud
-
-print("** sync local homevideo -> cloud  homevideo **")
-sync_folder(local + '/homevideo', cloud + '/homevideo', ignore_patterns=['*/~*'])
+curl -v -X PUT  -d "{\"upper_layer_text\": \"Hello world\"}" http://192.168.1.101:8088/properties/upper_layer_text
 ```
 
+
+**Docker**
+```
+sudo docker run -p 8070:8070 --device /dev/i2c-1:/dev/i2c-1 -e name="WebServer" -e i2c_expander=PCF8574 -e i2c_address=0x27  grro/pi_display_webthing:0.2.5
+```
