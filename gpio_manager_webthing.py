@@ -59,7 +59,7 @@ class OutGpioThing(Thing):
 
 
 def run_server(port: int, configs: List[Config]):
-    outs = [OutGpioThing(OutGpio(conf.port, conf.name)) for conf in configs if conf.is_out]
+    outs = [OutGpioThing(OutGpio(conf.name, conf.port)) for conf in configs if conf.is_out]
     server = WebThingServer(MultipleThings(outs, "outs"), port=port, disable_host_validation=True)
     try:
         logging.info('starting the server')

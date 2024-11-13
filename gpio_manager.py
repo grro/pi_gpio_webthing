@@ -4,7 +4,8 @@ import RPi.GPIO as GPIO
 
 class OutGpio:
 
-    def __init__(self, gpio_number: int, name: str):
+    def __init__(self, name: str, gpio_number: int):
+        logging.info("initialazation of out gpio " + name + " on " + str(gpio_number))
         self.name = name
         self.gpio_number = gpio_number
         GPIO.setmode(GPIO.BCM)
