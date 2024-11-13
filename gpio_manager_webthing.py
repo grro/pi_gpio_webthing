@@ -4,41 +4,41 @@ from dataclasses import dataclass
 from typing import List
 import logging
 import tornado.ioloop
-from gpio_manager import OutGpio
+from gpio_manager import LedDevice
 
 
 @dataclass
 class Config:
-    is_out: bool
+    type: str
     name: str
     port: int
 
     @staticmethod
     def parse(conf: str):
         parts = conf.split(":")
-        return Config(bool(parts[0]), parts[1], int(parts[2]))
+        return Config(parts[0], parts[1], int(parts[2]))
 
 
 
-class OutGpioThing(Thing):
+class LedThing(Thing):
 
     # regarding capabilities refer https://iot.mozilla.org/schemas
     # there is also another schema registry http://iotschema.org/docs/full.html not used by webthing
 
-    def __init__(self, gpio: OutGpio):
+    def __init__(self, led: LedDevice):
         Thing.__init__(
             self,
-            'urn:dev:ops:gpio_out-1',
-            'GPIO OUT ' + gpio.name,
-            ['GpioOut'],
+            'urn:dev:ops:led-1',
+            'LED ' + led.name,
+            ['LED'],
             ""
         )
 
         self.ioloop = tornado.ioloop.IOLoop.current()
-        self.gpio = gpio
-        self.gpio.set_listener(self.on_value_changed)
+        self.led = led
+        self.led.set_listener(self.on_value_changed)
 
-        self.is_on = Value(gpio.is_on(), gpio.switch)
+        self.is_on = Value(led.is_on(), led.switch)
         self.add_property(
             Property(self,
                      'is-on',
@@ -54,13 +54,13 @@ class OutGpioThing(Thing):
         self.ioloop.add_callback(self._on_value_changed)
 
     def _on_value_changed(self):
-        self.is_on.notify_of_external_update(self.gpio.is_on())
+        self.is_on.notify_of_external_update(self.led.is_on())
 
 
 
 def run_server(port: int, configs: List[Config]):
-    outs = [OutGpioThing(OutGpio(conf.name, conf.port)) for conf in configs if conf.is_out]
-    server = WebThingServer(MultipleThings(outs, "outs"), port=port, disable_host_validation=True)
+    leds = [LedThing(LedDevice(conf.name, conf.port)) for conf in configs if conf.type.lower() == 'led']
+    server = WebThingServer(MultipleThings(leds, "leds"), port=port, disable_host_validation=True)
     try:
         logging.info('starting the server')
         server.start()
