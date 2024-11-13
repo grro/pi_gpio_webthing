@@ -15,6 +15,7 @@ class Config:
 
     @staticmethod
     def parse(conf: str):
+        logging.info("parsing " + conf)
         parts = conf.split(":")
         return Config(parts[0], parts[1], int(parts[2]))
 
@@ -58,11 +59,11 @@ class LedThing(Thing):
 
 
 
-def run_server(port: int, configs: List[Config]):
-    leds = [LedThing(LedDevice(conf.name, conf.port)) for conf in configs if conf.type.lower() == 'led']
+def run_server(port: int, confs: List[Config]):
+    leds = [LedThing(LedDevice(conf.name, conf.port)) for conf in confs if conf.type.lower() == 'led']
     server = WebThingServer(MultipleThings(leds, "leds"), port=port, disable_host_validation=True)
     try:
-        logging.info('starting the server')
+        logging.info('starting the server on port ' + str(port))
         server.start()
     except KeyboardInterrupt:
         logging.info('stopping the server')
@@ -74,4 +75,6 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s %(name)-20s: %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
     logging.getLogger('tornado.access').setLevel(logging.ERROR)
     logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
-    run_server(int(sys.argv[1]), [Config.parse(conf) for conf in sys.argv[2].split("&")])
+    port = int(sys.argv[1])
+    confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
+    run_server(port, confs)

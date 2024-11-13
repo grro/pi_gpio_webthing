@@ -1,7 +1,13 @@
-FROM python:3
+FROM python:3.11
 
 ENV port 8642
-ENV gpio "out:test:23"
+ENV gpio ""
+
+
+RUN pip install lgpio pigpio gpio gpiozero
+
+RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0.2.2.0.tar.gz
+RUN pip install lgpio-0.2.2.0.tar.gz
 
 RUN cd /etc
 RUN mkdir app
