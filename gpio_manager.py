@@ -11,7 +11,7 @@ class LedDevice:
         self.name = name
         self.gpio_number = gpio_number
         self.is_on = False
-        self.chip=gpiod.Chip('gpiochip0')
+        self.chip=gpiod.Chip('/dev/gpiochip0')
         self.lines = self.chip.get_lines([ self.gpio_number ])
         self.lines.request(consumer='gpio', type=gpiod.LINE_REQ_DIR_OUT)
         self.__listener = lambda: None    # "empty" listener
