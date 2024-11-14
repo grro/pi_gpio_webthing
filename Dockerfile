@@ -1,13 +1,10 @@
-FROM python:3.11
+FROM python:3-alpine
 
 ENV port 8642
 ENV gpio ""
 
 
-RUN pip install lgpio pigpio gpio gpiozero
-
-RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0.2.2.0.tar.gz
-RUN pip install lgpio-0.2.2.0.tar.gz
+RUN apk update && apk add python3 py3-libgpiod py3-pip
 
 RUN cd /etc
 RUN mkdir app
