@@ -1,2 +1,2 @@
 webthing>=0.15.0
-gpiod
+gpiod==0.6.0
