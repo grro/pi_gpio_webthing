@@ -1,5 +1,0 @@
-webthing>=0.15.0
-gpiozero==2.0.1
-lgpio
-pigpio
-gpio

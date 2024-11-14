@@ -8,14 +8,12 @@ RUN cd /etc
 RUN mkdir app
 WORKDIR /etc/app
 ADD *.py /etc/app/
-ADD requirements.txt /etc/app/.
-RUN pip  install -r requirements.txt
-
-RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0.2.2.0.tar.gz
-RUN pip install lgpio-0.2.2.0.tar.gz
+RUN pip install gpiozero --break-system-packages
+RUN pip install webthing>=0.15.0 --break-system-packages
 
 
 CMD python /etc/app/gpio_manager_webthing.py $port $gpio
+RUN /bin/bash
 
 
 
