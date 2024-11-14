@@ -6,7 +6,7 @@ from gpiozero import LED
 class LedDevice:
 
     def __init__(self, name: str, gpio_number: int):
-        logging.info("initialization of out gpio " + name + " on " + str(gpio_number))
+        logging.info("initialization of LED " + name + " on " + str(gpio_number))
         self.name = name
         self.gpio_number = gpio_number
         self.led = LED(gpio_number)

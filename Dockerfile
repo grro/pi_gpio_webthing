@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM debian:latest
 
 ENV port 8642
 ENV gpio ""
