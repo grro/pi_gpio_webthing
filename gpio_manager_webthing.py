@@ -39,7 +39,7 @@ class LedThing(Thing):
         self.led = led
         self.led.set_listener(self.on_value_changed)
 
-        self.is_on = Value(led.is_on(), led.switch)
+        self.is_on = Value(led.is_on, led.switch)
         self.add_property(
             Property(self,
                      'is-on',
@@ -55,7 +55,7 @@ class LedThing(Thing):
         self.ioloop.add_callback(self._on_value_changed)
 
     def _on_value_changed(self):
-        self.is_on.notify_of_external_update(self.led.is_on())
+        self.is_on.notify_of_external_update(self.led.is_on)
 
 
 
