@@ -31,4 +31,5 @@ class LedDevice:
                 },
         ) as request:
             request.set_value(self.gpio_number, Value.ACTIVE if on else Value.INACTIVE)
+            self.is_on = True
             self.__notify_listener()
