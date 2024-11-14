@@ -1,10 +1,10 @@
-FROM python:3-alpine
+FROM python:3.11
 
 ENV port 8642
 ENV gpio ""
 
+RUN apt update && apt install -y python3 python3-libgpiod
 
-RUN apk update && apk add python3 py3-libgpiod py3-pip
 
 RUN cd /etc
 RUN mkdir app
