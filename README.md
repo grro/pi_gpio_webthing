@@ -1,7 +1,7 @@
 
 
 ```
-curl -v -X PUT  -d "{\"upper_layer_text\": \"Hello world\"}" http://192.168.1.101:8088/properties/upper_layer_text
+curl -v -X PUT  -d "{\"is-on\": true}" http://192.168.1.99:8316/0/properties/is-on
 ```
 
 

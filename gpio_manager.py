@@ -23,6 +23,7 @@ class LedDevice:
             logging.warning(str(e))
 
     def switch(self, on: bool):
+        logging.info("set LED to " + str(on))
         with gpiod.request_lines("/dev/gpiochip0",consumer="led",config={
             self.gpio_number: gpiod.LineSettings(
                         direction=Direction.OUTPUT, output_value=Value.ACTIVE
