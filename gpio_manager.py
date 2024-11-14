@@ -1,6 +1,5 @@
 import logging
-import gpiod
-
+from gpiozero import LED
 
 
 class LedDevice:
@@ -9,13 +8,7 @@ class LedDevice:
         logging.info("initialization of LED " + name + " on " + str(gpio_number))
         self.name = name
         self.gpio_number = gpio_number
-        self.is_on = False
-        chip = gpiod.Chip('/dev/gpiochip0')
-        self.led = chip.get_line(self.gpio_number)
-        config = gpiod.line_request()
-        config.consumer = "Blink"
-        config.request_type = gpiod.line_request.DIRECTION_OUTPUT
-        self.led.request(config)
+        self.led = LED(self.gpio_number)
         self.__listener = lambda: None    # "empty" listener
 
     def set_listener(self,listener):
@@ -29,6 +22,12 @@ class LedDevice:
 
     def switch(self, on: bool):
         logging.info("set LED to " + str(on))
-        self.led.set_value(1 if on else 0)
-        self.is_on = True
-        self.__notify_listener()
+        if on:
+            self.led.on()
+        else:
+            self.led.close()
+            self.__notify_listener()
+
+    @property
+    def is_on(self) -> bool:
+        return self.led.is_active
