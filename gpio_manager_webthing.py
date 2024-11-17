@@ -7,6 +7,7 @@ import tornado.ioloop
 from gpio_manager import OutGpio
 
 
+
 @dataclass
 class Config:
     type: str
