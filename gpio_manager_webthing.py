@@ -13,12 +13,16 @@ class Config:
     type: str
     name: str
     port: int
+    reverted: bool
 
     @staticmethod
     def parse(conf: str):
         logging.info("parsing " + conf)
         parts = conf.split(":")
-        return Config(parts[0], parts[1], int(parts[2]))
+        if len(parts) > 3:
+            return Config(parts[0], parts[1], int(parts[2]), False)
+        else:
+            return Config(parts[0], parts[1], int(parts[2]), bool(parts[3]))
 
 
 
@@ -60,7 +64,7 @@ class OutThing(Thing):
 
 
 def run_server(port: int, confs: List[Config]):
-    leds = [OutThing(OutGpio(conf.port, conf.name)) for conf in confs if conf.type.lower() == 'led']
+    leds = [OutThing(OutGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'led']
     server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
     try:
         logging.info('starting the server on port ' + str(port))
@@ -77,4 +81,4 @@ if __name__ == '__main__':
     logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
     port = int(sys.argv[1])
     confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
-    run_server(port, confs)
+    reverted = bool(sys.argv[2])
