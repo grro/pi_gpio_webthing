@@ -11,7 +11,7 @@ class OutGpio:
         self.reverted = reverted
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.OUT)
-        logging.info("GPIO OUT " + str(self.gpio_number) + " registered " + (" (reverted=true)" if self.reverted else ""))
+        logging.info("GPIO OUT " + name + " registered on " + str(self.gpio_number) + (" (reverted=true)" if self.reverted else ""))
 
     def switch(self, on:bool):
         logging.info("setting OUT " + str(self.gpio_number) + " " + ("on" if on else "off"))
