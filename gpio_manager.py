@@ -1,33 +1,23 @@
 import logging
-from gpiozero import LED
+import RPi.GPIO as GPIO
 
 
-class LedDevice:
 
-    def __init__(self, name: str, gpio_number: int):
-        logging.info("initialization of LED " + name + " on " + str(gpio_number))
+class OutGpio:
+
+    def __init__(self, gpio_number: int, name: str):
         self.name = name
         self.gpio_number = gpio_number
-        self.led = LED(self.gpio_number)
-        self.__listener = lambda: None    # "empty" listener
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.gpio_number, GPIO.OUT)
 
-    def set_listener(self,listener):
-        self.__listener = listener
-
-    def __notify_listener(self):
-        try:
-            self.__listener()
-        except Exception as e:
-            logging.warning(str(e))
-
-    def switch(self, on: bool):
-        logging.info("set LED to " + str(on))
+    def switch(self, on:bool):
         if on:
-            self.led.on()
+            logging.info("setting OUT " + str(self.gpio_number) + " on")
+            GPIO.output(self.gpio_number,GPIO.HIGH)
         else:
-            self.led.close()
-            self.__notify_listener()
+            logging.info("setting OUT " + str(self.gpio_number) + " off")
+            GPIO.output(self.gpio_number,GPIO.LOW)
 
-    @property
     def is_on(self) -> bool:
-        return self.led.is_active
+        return GPIO.input(self.gpio_number)

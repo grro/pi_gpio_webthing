@@ -1,0 +1,2 @@
+webthing>=0.15.0
+rpi-lgpio>=0.6

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List
 import logging
 import tornado.ioloop
-from gpio_manager import LedDevice
+from gpio_manager import OutGpio
 
 
 @dataclass
@@ -21,25 +21,24 @@ class Config:
 
 
 
-class LedThing(Thing):
+class OutThing(Thing):
 
     # regarding capabilities refer https://iot.mozilla.org/schemas
     # there is also another schema registry http://iotschema.org/docs/full.html not used by webthing
 
-    def __init__(self, led: LedDevice):
+    def __init__(self, out: OutGpio):
         Thing.__init__(
             self,
-            'urn:dev:ops:led-1',
-            'LED ' + led.name,
-            ['LED'],
+            'urn:dev:ops:gpio_out-1',
+            'Out ' + out.name,
+            ['GpioOut'],
             ""
         )
 
         self.ioloop = tornado.ioloop.IOLoop.current()
-        self.led = led
-        self.led.set_listener(self.on_value_changed)
+        self.out = out
 
-        self.is_on = Value(led.is_on, led.switch)
+        self.is_on = Value(out.is_on, out.switch)
         self.add_property(
             Property(self,
                      'is-on',
@@ -55,13 +54,13 @@ class LedThing(Thing):
         self.ioloop.add_callback(self._on_value_changed)
 
     def _on_value_changed(self):
-        self.is_on.notify_of_external_update(self.led.is_on)
+        pass
 
 
 
 def run_server(port: int, confs: List[Config]):
-    leds = [LedThing(LedDevice(conf.name, conf.port)) for conf in confs if conf.type.lower() == 'led']
-    server = WebThingServer(MultipleThings(leds, "leds"), port=port, disable_host_validation=True)
+    leds = [OutThing(OutGpio(conf.port, conf.name)) for conf in confs if conf.type.lower() == 'led']
+    server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
     try:
         logging.info('starting the server on port ' + str(port))
         server.start()
