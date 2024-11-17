@@ -20,9 +20,9 @@ class Config:
         logging.info("parsing " + conf)
         parts = conf.split(":")
         if len(parts) > 3:
-            return Config(parts[0], parts[1], int(parts[2]), False)
-        else:
             return Config(parts[0], parts[1], int(parts[2]), bool(parts[3]))
+        else:
+            return Config(parts[0], parts[1], int(parts[2]), False)
 
 
 
@@ -76,9 +76,13 @@ def run_server(port: int, confs: List[Config]):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s %(name)-20s: %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
-    logging.getLogger('tornado.access').setLevel(logging.ERROR)
-    logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
-    port = int(sys.argv[1])
-    confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
-    reverted = bool(sys.argv[2])
+    try:
+        logging.basicConfig(format='%(asctime)s %(name)-20s: %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+        logging.getLogger('tornado.access').setLevel(logging.ERROR)
+        logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
+        port = int(sys.argv[1])
+        confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
+        reverted = bool(sys.argv[2])
+    except Exception as e:
+        logging.error(str(e))
+        raise e
