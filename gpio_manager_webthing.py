@@ -82,7 +82,7 @@ if __name__ == '__main__':
         logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
         port = int(sys.argv[1])
         confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
-        reverted = bool(sys.argv[2])
+        run_server(port, confs)
     except Exception as e:
         logging.error(str(e))
         raise e
