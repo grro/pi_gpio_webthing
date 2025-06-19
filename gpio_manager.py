@@ -46,7 +46,7 @@ class InGpio:
 
     def __state_updated(self, channel):
         logging.info("GPIO IN " + self.name + " new state " + str(self.is_on()))
-        self.listener(self.is_on())
+        self.listener()
 
 
     def is_on(self) -> bool:

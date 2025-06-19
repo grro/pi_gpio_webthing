@@ -81,7 +81,7 @@ class InThing(Thing):
         self.ioloop = tornado.ioloop.IOLoop.current()
         self.in_gpio = in_gpio
 
-        self.is_on = Value(in_gpio.is_on)
+        self.is_on = Value(in_gpio.is_on())
         self.add_property(
             Property(self,
                      'is-on',
@@ -99,7 +99,7 @@ class InThing(Thing):
         self.ioloop.add_callback(self._on_value_changed)
 
     def _on_value_changed(self):
-        pass
+        self.is_on.notify_of_external_update(self.in_gpio.is_on())
 
 
 
