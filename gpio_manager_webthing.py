@@ -5,6 +5,7 @@ from typing import List
 import logging
 import tornado.ioloop
 from gpio_manager import OutGpio
+from gpio_manager import InGpio
 
 
 
@@ -63,8 +64,50 @@ class OutThing(Thing):
 
 
 
+class InThing(Thing):
+
+    # regarding capabilities refer https://iot.mozilla.org/schemas
+    # there is also another schema registry http://iotschema.org/docs/full.html not used by webthing
+
+    def __init__(self, in_gpio: InGpio):
+        Thing.__init__(
+            self,
+            'urn:dev:ops:gpio_in-1',
+            'In ' + in_gpio.name,
+            ['GpioIn'],
+            ""
+        )
+
+        self.ioloop = tornado.ioloop.IOLoop.current()
+        self.in_gpio = in_gpio
+
+        self.is_on = Value(in_gpio.is_on)
+        self.add_property(
+            Property(self,
+                     'is-on',
+                     self.is_on,
+                     metadata={
+                         'title': 'is on',
+                         "type": "boolean",
+                         'description': 'True if is on',
+                         'readOnly': True,
+                     }))
+
+        self.in_gpio.register_listener(self.on_value_changed)
+
+    def on_value_changed(self):
+        self.ioloop.add_callback(self._on_value_changed)
+
+    def _on_value_changed(self):
+        pass
+
+
+
+
 def run_server(port: int, confs: List[Config]):
-    leds = [OutThing(OutGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'out']
+    in_leds = [OutThing(OutGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'out']
+    out_leds = [InThing(InGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'in']
+    leds = in_leds + out_leds
     server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
     try:
         logging.info('starting the server on port ' + str(port))
@@ -86,3 +129,4 @@ if __name__ == '__main__':
     except Exception as e:
         logging.error(str(e))
         raise e
+
