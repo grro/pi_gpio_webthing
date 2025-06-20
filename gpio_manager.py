@@ -35,7 +35,7 @@ class InGpio:
         self.name = name
         self.gpio_number = gpio_number
         self.reverted = reverted
-        self.listener = lambda state: None
+        self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
         logging.info("GPIO IN " + name + " registered on " + str(self.gpio_number) + (" (reverted=true)" if self.reverted else ""))
