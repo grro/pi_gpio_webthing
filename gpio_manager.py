@@ -1,6 +1,7 @@
 import logging
 import RPi.GPIO as GPIO
 from threading import Thread
+from time import sleep
 
 
 
@@ -44,7 +45,13 @@ class InGpio:
         Thread(target=self.__loop, daemon=True).start()  # initial state check
 
     def __loop(self):
-        self.listener()
+        logging.info("GPIO IN " + self.name + " state " + str(self.is_on()))
+        while True:
+            try:
+                self.listener()
+            except Exception as e:
+                logging.error("Error in GPIO IN " + self.name + " listener: " + str(e))
+                sleep(7)
 
     def register_listener(self, listener):
         self.listener = listener
