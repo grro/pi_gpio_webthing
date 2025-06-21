@@ -53,6 +53,7 @@ class InGpio:
         self.listener = listener
 
     def __check(self):
+        logging.info(GPIO.input(self.gpio_number))
         new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
             self.__on = new_on
