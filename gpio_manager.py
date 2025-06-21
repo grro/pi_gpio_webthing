@@ -53,10 +53,10 @@ class InGpio:
         self.listener = listener
 
     def __check(self):
-        new_on = GPIO.input(self.gpio_number)
+        new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
-            logging.info("GPIO IN " + self.name + " state changed from " + str(self.__on) + " to " + str(new_on))
             self.__on = new_on
+            logging.info("GPIO IN " + self.name + " new state" + str(self.on))
             self.listener()
 
     def __loop(self):
