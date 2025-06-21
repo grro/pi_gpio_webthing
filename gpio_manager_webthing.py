@@ -84,7 +84,7 @@ class InThing(Thing):
         self.is_on = Value(in_gpio.on)
         self.add_property(
             Property(self,
-                     'is-on',
+                     'on',
                      self.is_on,
                      metadata={
                          'title': 'is on',
