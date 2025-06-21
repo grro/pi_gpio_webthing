@@ -56,7 +56,7 @@ class InGpio:
         new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
             self.__on = new_on
-            logging.info("GPIO IN " + self.name + " new state: " + str(self.on) + (" (GPIO: " + str(GPIO.input(self.gpio_number)) + "; reverted)" if self.reverted else " (GPIO: " + str(GPIO.input(self.gpio_number)) + ")"))
+            logging.info("GPIO IN " + self.name + " new state: " + str(self.on) + (" (GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + "; reverted)" if self.reverted else " (GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + ")"))
             self.listener()
 
     def __loop(self):
