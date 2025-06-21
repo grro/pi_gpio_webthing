@@ -47,7 +47,7 @@ class InGpio:
 
     @property
     def on(self) -> bool:
-        return self.__on if not self.reverted else self.__on
+        return not self.__on if not self.reverted else self.__on
 
     def register_listener(self, listener):
         self.listener = listener
