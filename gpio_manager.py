@@ -1,5 +1,6 @@
 import logging
 import RPi.GPIO as GPIO
+from threading import Thread
 
 
 
@@ -40,6 +41,10 @@ class InGpio:
         GPIO.setup(self.gpio_number, GPIO.IN)
         logging.info("GPIO IN " + name + " registered on " + str(self.gpio_number) + (" (reverted=true)" if self.reverted else ""))
         GPIO.add_event_detect(self.gpio_number, GPIO.BOTH, callback=self.__state_updated)
+        Thread(target=self.__loop, daemon=True).start()  # initial state check
+
+    def __loop(self):
+        self.listener()
 
     def register_listener(self, listener):
         self.listener = listener
