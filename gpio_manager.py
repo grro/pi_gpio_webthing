@@ -37,29 +37,30 @@ class InGpio:
         self.name = name
         self.gpio_number = gpio_number
         self.reverted = reverted
+        self.on = False
         self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
         logging.info("GPIO IN " + name + " registered on " + str(self.gpio_number) + (" (reverted=true)" if self.reverted else ""))
-        GPIO.add_event_detect(self.gpio_number, GPIO.BOTH, callback=self.__state_updated)
-        Thread(target=self.__loop, daemon=True).start()  # initial state check
+        GPIO.add_event_detect(self.gpio_number, GPIO.BOTH, callback=self.__check())
+        Thread(target=self.__loop, daemon=True).start()
 
-    def __loop(self):
-        logging.info("GPIO IN " + self.name + " state " + str(self.is_on()))
-        while True:
-            try:
-                self.listener()
-            except Exception as e:
-                logging.error("Error in GPIO IN " + self.name + " listener: " + str(e))
-                sleep(7)
 
     def register_listener(self, listener):
         self.listener = listener
 
-    def __state_updated(self, channel):
-        logging.info("GPIO IN " + self.name + " new state " + str(self.is_on()))
-        self.listener()
+    def __check(self):
+        new_on = GPIO.input(self.gpio_number)
+        if new_on != self.on:
+            logging.info("GPIO IN " + self.name + " state changed from " + str(self.on) + " to " + str(new_on))
+            self.on = new_on
+            self.listener()
 
-
-    def is_on(self) -> bool:
-        return GPIO.input(self.gpio_number)
+    def __loop(self):
+        while True:
+            try:
+                self.__check()
+            except Exception as e:
+                logging.error("Error in GPIO IN " + self.name + " listener: " + str(e))
+            finally:
+                sleep(9)
