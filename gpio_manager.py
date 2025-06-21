@@ -37,7 +37,7 @@ class InGpio:
         self.name = name
         self.gpio_number = gpio_number
         self.reverted = reverted
-        self.on = None
+        self.__on = None
         self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
@@ -45,15 +45,18 @@ class InGpio:
         GPIO.add_event_detect(self.gpio_number, GPIO.BOTH, callback=self.__check())
         Thread(target=self.__loop, daemon=True).start()
 
+    @property
+    def on(self) -> bool:
+        return self.__on if not self.reverted else self.__on
 
     def register_listener(self, listener):
         self.listener = listener
 
     def __check(self):
         new_on = GPIO.input(self.gpio_number)
-        if new_on != self.on:
-            logging.info("GPIO IN " + self.name + " state changed from " + str(self.on) + " to " + str(new_on))
-            self.on = new_on
+        if new_on != self.__on:
+            logging.info("GPIO IN " + self.name + " state changed from " + str(self.__on) + " to " + str(new_on))
+            self.__on = new_on
             self.listener()
 
     def __loop(self):
