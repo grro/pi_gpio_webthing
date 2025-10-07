@@ -2,6 +2,7 @@ import logging
 import RPi.GPIO as GPIO
 from threading import Thread
 from time import sleep
+from state_buffer import StateBuffer
 
 
 
@@ -38,6 +39,9 @@ class InGpio:
         self.gpio_number = gpio_number
         self.reverted = reverted
         self.__on = None
+        self.__smoothen_1m =  StateBuffer(60)
+        self.__smoothen_3m =  StateBuffer(3*60)
+        self.__smoothen_5m =  StateBuffer(5*60)
         self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
@@ -49,6 +53,18 @@ class InGpio:
     def on(self) -> bool:
         return not self.__on if self.reverted else self.__on
 
+    @property
+    def on_smoothen_1m(self) -> bool:
+        return self.__smoothen_1m.average_value()
+
+    @property
+    def on_smoothen_3m(self) -> bool:
+        return self.__smoothen_3m.average_value()
+
+    @property
+    def on_smoothen_5m(self) -> bool:
+        return self.__smoothen_5m.average_value()
+
     def register_listener(self, listener):
         self.listener = listener
 
@@ -56,7 +72,15 @@ class InGpio:
         new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
             self.__on = new_on
-            logging.info("GPIO IN " + self.name + " new effective state: " + str(self.on) + (" (GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + "; reverted)" if self.reverted else " (GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + ")"))
+            self.__smoothen_1m.update(self.on)
+            self.__smoothen_3m.update(self.on)
+            self.__smoothen_5m.update(self.on)
+
+            msg = "GPIO IN " + self.name + " new effective state: " + str(self.on)
+            smoothen = "smoothen 1m: " + str(self.on_smoothen_1m) + ", 3m: " + str(self.on_smoothen_3m) + ", 5m: " + str(self.on_smoothen_5m)
+            config = "GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + ("; reverted" if self.reverted else "")
+            logging.info(msg + " (" + smoothen + "; " + config + ")")
+
             self.listener()
 
     def __loop(self):

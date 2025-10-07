@@ -93,6 +93,42 @@ class InThing(Thing):
                          'readOnly': True,
                      }))
 
+        self.is_on_1m = Value(in_gpio.on_smoothen_1m)
+        self.add_property(
+            Property(self,
+                     'on_1m',
+                     self.is_on_1m,
+                     metadata={
+                         'title': 'is on (smoothened 1m)',
+                         "type": "boolean",
+                         'description': 'True if is on (smoothened over 1 minute)',
+                         'readOnly': True,
+                     }))
+
+        self.is_on_3m = Value(in_gpio.on_smoothen_3m)
+        self.add_property(
+            Property(self,
+                     'on_3m',
+                     self.is_on_3m,
+                     metadata={
+                         'title': 'is on (smoothened 3m)',
+                         "type": "boolean",
+                         'description': 'True if is on (smoothened over 3 minute)',
+                         'readOnly': True,
+                     }))
+
+        self.is_on_5m = Value(in_gpio.on_smoothen_5m)
+        self.add_property(
+            Property(self,
+                     'on_5m',
+                     self.is_on_5m,
+                     metadata={
+                         'title': 'is on (smoothened 5m)',
+                         "type": "boolean",
+                         'description': 'True if is on (smoothened over 5 minute)',
+                         'readOnly': True,
+                     }))
+
         self.in_gpio.register_listener(self.on_value_changed)
 
     def on_value_changed(self):
@@ -100,7 +136,9 @@ class InThing(Thing):
 
     def _on_value_changed(self):
         self.is_on.notify_of_external_update(self.in_gpio.on)
-
+        self.is_on_1m.notify_of_external_update(self.in_gpio.on_smoothen_1m)
+        self.is_on_3m.notify_of_external_update(self.in_gpio.on_smoothen_3m)
+        self.is_on_5m.notify_of_external_update(self.in_gpio.on_smoothen_5m)
 
 
 
