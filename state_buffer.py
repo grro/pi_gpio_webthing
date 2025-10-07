@@ -74,7 +74,7 @@ class StateBuffer:
             self.changes = new_changes
 
 
-    def average_value(self) -> bool:
+    def average(self) -> bool:
         if len(self.changes) == 1:
             return self.__current_state()
         else:
