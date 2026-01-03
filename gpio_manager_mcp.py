@@ -11,21 +11,19 @@ class GpioManagerMCPServer(MCPServer):
 
         @self.mcp.resource("db://names/in")
         def list_in_names() -> str:
-            """Provides a comma-separated list of all registered input GPIO names."""
+            """Returns a list of all available input sensor names."""
             return ", ".join(self.in_gpios.keys())
 
         @self.mcp.resource("db://names/out")
         def list_out_names() -> str:
-            """Provides a comma-separated list of all registered output GPIO names."""
+            """Returns a list of all available output actuator names."""
             return ", ".join(self.out_gpios.keys())
 
-        @self.mcp.resource("db://{name}")
-        def get_value(name: str) -> str:
-            """
-            Dynamic resource to retrieve the current state (ON/OFF) of a specific GPIO.
-            Args:
-                name: The dictionary key/name of the GPIO pin.
-            """
+        # --- State and Telemetry Resources ---
+
+        @self.mcp.resource("db://{name}/state")
+        def get_pin_state(name: str) -> str:
+            """Returns the current logical state (ON/OFF) of a pin."""
             try:
                 if name in self.in_gpios:
                     return "ON" if self.in_gpios[name].on else "OFF"
@@ -33,27 +31,52 @@ class GpioManagerMCPServer(MCPServer):
                     return "ON" if self.out_gpios[name].on else "OFF"
                 return f"Error: GPIO '{name}' not found."
             except Exception as e:
-                return f"Error retrieving {name}: {str(e)}"
+                return f"Error retrieving {name} state: {str(e)}"
 
-        # --- MCP Tools ---
-        # Tools are executable functions that allow the AI to perform actions.
+        @self.mcp.resource("db://{name}/last_on")
+        def get_last_on_time(name: str) -> str:
+            """Returns the ISO timestamp of when the input pin was last activated."""
+            try:
+                if name in self.in_gpios:
+                    return self.in_gpios[name].last_on.strftime("%Y-%m-%dT%H:%M:%S")
+                return f"Error: '{name}' is not an input GPIO."
+            except Exception as e:
+                return f"Error retrieving {name} last_on: {str(e)}"
+
+        @self.mcp.resource("db://{name}/last_off")
+        def get_last_off_time(name: str) -> str:
+            """Returns the ISO timestamp of when the input pin was last deactivated."""
+            try:
+                if name in self.in_gpios:
+                    return self.in_gpios[name].last_off.strftime("%Y-%m-%dT%H:%M:%S")
+                return f"Error: '{name}' is not an input GPIO."
+            except Exception as e:
+                return f"Error retrieving {name} last_off: {str(e)}"
+
+        @self.mcp.resource("db://{name}/last_change")
+        def get_last_change_time(name: str) -> str:
+            """Returns the ISO timestamp of the last state change (input only)."""
+            try:
+                if name in self.in_gpios:
+                    return self.in_gpios[name].last_change.strftime("%Y-%m-%dT%H:%M:%S")
+                return f"Error: '{name}' is not an input GPIO."
+            except Exception as e:
+                return f"Error retrieving {name} last_change: {str(e)}"
+
+        # --- Control Tools ---
 
         @self.mcp.tool()
         def set_value(name: str, on: bool) -> str:
             """
-            Actionable tool to change the state of an output GPIO pin.
-
-            :param name: The identifier of the pin (e.g., 'led_red', 'relay_1')
-            :param on: Boolean value (True for ON, False for OFF)
-            :return: A confirmation message or error string.
+            Changes the state of an output pin.
+            :param name: Identifier (e.g., 'fan', 'led')
+            :param on: True to enable, False to disable
             """
             if name in self.out_gpios:
-                # Triggers the hardware switch via the OutGpio manager
                 self.out_gpios[name].switch(on)
                 state = "ON" if on else "OFF"
                 return f"Successfully set {name} to {state}"
-            else:
-                return f"GPIO {name} not found or is not an output GPIO."
+            return f"GPIO {name} not found or is not an output."
 
 # npx @modelcontextprotocol/inspector
 

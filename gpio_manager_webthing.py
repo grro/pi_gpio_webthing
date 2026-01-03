@@ -93,39 +93,39 @@ class InThing(Thing):
                          'readOnly': True,
                      }))
 
-        self.is_on_1m = Value(in_gpio.on_smoothen_1m)
+        self.last_on = Value(in_gpio.last_on.strftime("%Y-%m-%dT%H:%M:%S"))
         self.add_property(
             Property(self,
-                     'on_1m',
-                     self.is_on_1m,
+                     'last_on',
+                     self.last_on,
                      metadata={
-                         'title': 'is on (smoothened 1m)',
-                         "type": "boolean",
-                         'description': 'True if is on (smoothened over 1 minute)',
+                         'title': 'last on',
+                         "type": "string",
+                         'description': 'datetime of last on (ISO8601)',
                          'readOnly': True,
                      }))
 
-        self.is_on_3m = Value(in_gpio.on_smoothen_3m)
+        self.last_off = Value(in_gpio.last_off.strftime("%Y-%m-%dT%H:%M:%S"))
         self.add_property(
             Property(self,
-                     'on_3m',
-                     self.is_on_3m,
+                     'last_off',
+                     self.last_off,
                      metadata={
-                         'title': 'is on (smoothened 3m)',
-                         "type": "boolean",
-                         'description': 'True if is on (smoothened over 3 minute)',
+                         'title': 'last off',
+                         "type": "string",
+                         'description': 'datetime of last off (ISO8601)',
                          'readOnly': True,
                      }))
 
-        self.is_on_5m = Value(in_gpio.on_smoothen_5m)
+        self.last_change = Value(in_gpio.last_change.strftime("%Y-%m-%dT%H:%M:%S"))
         self.add_property(
             Property(self,
-                     'on_5m',
-                     self.is_on_5m,
+                     'last_change',
+                     self.last_change,
                      metadata={
-                         'title': 'is on (smoothened 5m)',
-                         "type": "boolean",
-                         'description': 'True if is on (smoothened over 5 minute)',
+                         'title': 'last change',
+                         "type": "string",
+                         'description': 'datetime of last change (ISO8601)',
                          'readOnly': True,
                      }))
 
@@ -136,10 +136,9 @@ class InThing(Thing):
 
     def _on_value_changed(self):
         self.is_on.notify_of_external_update(self.in_gpio.on)
-        self.is_on_1m.notify_of_external_update(self.in_gpio.on_smoothen_1m)
-        self.is_on_3m.notify_of_external_update(self.in_gpio.on_smoothen_3m)
-        self.is_on_5m.notify_of_external_update(self.in_gpio.on_smoothen_5m)
-
+        self.last_on.notify_of_external_update(self.in_gpio.last_on.strftime("%Y-%m-%dT%H:%M:%S"))
+        self.last_off.notify_of_external_update(self.in_gpio.last_off.strftime("%Y-%m-%dT%H:%M:%S"))
+        self.last_change.notify_of_external_update(self.in_gpio.last_change.strftime("%Y-%m-%dT%H:%M:%S"))
 
 
 def run_server(port: int, confs: List[Config]):

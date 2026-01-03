@@ -1,8 +1,8 @@
 import logging
 import RPi.GPIO as GPIO
 from threading import Thread
+from datetime import datetime
 from time import sleep
-from state_buffer import StateBuffer
 
 
 
@@ -43,9 +43,9 @@ class InGpio:
         self.gpio_number = gpio_number
         self.reverted = reverted
         self.__on = None
-        self.__effective_smoothen_1m =  StateBuffer(60)
-        self.__effective_smoothen_3m =  StateBuffer(3*60)
-        self.__effective_smoothen_5m =  StateBuffer(5*60)
+        self.__datetime_last_on = datetime.now()
+        self.__datetime_last_off = datetime.now()
+        self.__datetime_last_change = datetime.now()
         self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
@@ -58,32 +58,33 @@ class InGpio:
         return not self.__on if self.reverted else self.__on
 
     @property
-    def on_smoothen_1m(self) -> bool:
-        return self.__effective_smoothen_1m.average()
+    def last_on(self) -> datetime:
+        return self.__datetime_last_on
 
     @property
-    def on_smoothen_3m(self) -> bool:
-        return self.__effective_smoothen_3m.average()
+    def last_off(self) -> datetime:
+        return self.__datetime_last_off
 
     @property
-    def on_smoothen_5m(self) -> bool:
-        return self.__effective_smoothen_5m.average()
+    def last_change(self) -> datetime:
+        return self.__datetime_last_change
 
-    def register_listener(self, listener):
+        def register_listener(self, listener):
         self.listener = listener
 
     def __check(self):
         new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
             self.__on = new_on
-            self.__effective_smoothen_1m.update(self.on)
-            self.__effective_smoothen_3m.update(self.on)
-            self.__effective_smoothen_5m.update(self.on)
+            self.__datetime_last_change = datetime.now()
+            if new_on:
+                self.__datetime_last_on = datetime.now()
+            else:
+                self.__datetime_last_off = datetime.now()
 
-            msg = "GPIO IN " + self.name + " new effective state: " + str(self.on)
-            smoothen = "effective smoothen 1m: " + str(self.on_smoothen_1m) + ", 3m: " + str(self.on_smoothen_3m) + ", 5m: " + str(self.on_smoothen_5m)
+            msg = "GPIO IN " + self.name + " new effective state: " + str(self.on) + " last_change: " + self.__datetime_last_change.strftime("%Y-%m-%dT%H:%M:%S")
             config = "GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + ("; reverted" if self.reverted else "")
-            logging.info(msg + " (" + smoothen + "; " + config + ")")
+            logging.info(msg + " (" + config + ")")
 
             self.listener()
 
