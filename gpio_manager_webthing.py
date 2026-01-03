@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import List
 import logging
 import tornado.ioloop
-from gpio_manager import OutGpio
-from gpio_manager import InGpio
-
+from gpio_manager import OutGpio, InGpio
+from gpio_manager_web import GpioManagerWebServer
+from gpio_manager_mcp import GpioManagerMCPServer
 
 
 @dataclass
@@ -147,11 +147,17 @@ def run_server(port: int, confs: List[Config]):
     out_leds = [InThing(InGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'in']
     leds = in_leds + out_leds
     server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
+    web_server = GpioManagerWebServer(port=port+1, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
+    mcp_server = GpioManagerMCPServer("GPIO", port=port+2, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
     try:
         logging.info('starting the server on port ' + str(port))
+        web_server.start()
+        mcp_server.start()
         server.start()
     except KeyboardInterrupt:
         logging.info('stopping the server')
+        web_server.stop()
+        mcp_server.stop()
         server.stop()
         logging.info('done')
 

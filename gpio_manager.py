@@ -29,6 +29,10 @@ class OutGpio:
     def is_on(self) -> bool:
         return GPIO.input(self.gpio_number)
 
+    @property
+    def on(self) -> bool:
+        return self.is_on() if not self.reverted else not self.is_on()
+
 
 
 
