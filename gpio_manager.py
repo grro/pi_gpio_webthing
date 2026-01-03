@@ -94,4 +94,4 @@ class InGpio:
             except Exception as e:
                 logging.error("Error in GPIO IN " + self.name + " listener: " + str(e))
             finally:
-                sleep(9)
+                sleep(2)

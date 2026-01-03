@@ -43,8 +43,7 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         html += "<h3>Inputs</h3>"
         for name, gpio in in_gpios.items():
             status = "ON" if gpio.on else "OFF"
-            html += f"<li><a href='/{name}'>{name}</a> (IN {gpio.gpio_number}) - Current: {status} "
-            html += f"[<a href='/{name}?set=true'>ON</a> | <a href='/{name}?set=false'>OFF</a>]</li>"
+            html += f"<li><a href='/{name}'>{name}</a> (IN {gpio.gpio_number}) - Current: {status} </li>"
 
         html += "<h3>Outputs</h3>"
         for name, gpio in out_gpios.items():
