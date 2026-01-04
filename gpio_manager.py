@@ -69,7 +69,7 @@ class InGpio:
     def last_change(self) -> datetime:
         return self.__datetime_last_change
 
-        def register_listener(self, listener):
+    def register_listener(self, listener):
         self.listener = listener
 
     def __check(self):
