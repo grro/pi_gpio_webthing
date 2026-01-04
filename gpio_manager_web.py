@@ -35,7 +35,7 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         # 2. Handle Input GPIOs (Read-only)
         if path in in_gpios:
             gpio = in_gpios[path]
-            self._send_json(200, {'name': path, 'value': gpio.on, 'reverted': gpio.reverted, 'last_on': gpio.last_on.isoformat(), 'last_off': gpio.last_off.isoformat(), 'last_change': gpio.last_change.isoformat()})
+            self._send_json(200, {'name': path, 'value': gpio.on, 'reverted': gpio.reverted, 'last_change': gpio.last_change.isoformat()})
             return
 
         # 3. Handle Index/Home Page
@@ -43,7 +43,7 @@ class SimpleRequestHandler(BaseHTTPRequestHandler):
         html += "<h3>Inputs</h3>"
         for name, gpio in in_gpios.items():
             status = "ON" if gpio.on else "OFF"
-            html += f"<li><a href='/{name}'>{name}</a> (IN {gpio.gpio_number}) - Current: {status} (last on {gpio.last_on.strftime('%Y-%m-%dT%H:%M:%S')}, last off {gpio.last_off.strftime('%Y-%m-%dT%H:%M:%S')}, last change {gpio.last_change.strftime('%Y-%m-%dT%H:%M:%S')})</li>"
+            html += f"<li><a href='/{name}'>{name}</a> (IN {gpio.gpio_number}) - Current: {status} (last change {gpio.last_change.strftime('%Y-%m-%dT%H:%M:%S')})</li>"
 
         html += "<h3>Outputs</h3>"
         for name, gpio in out_gpios.items():
