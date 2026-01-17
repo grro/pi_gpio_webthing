@@ -1,7 +1,7 @@
 import logging
 import RPi.GPIO as GPIO
 from threading import Thread
-from datetime import datetime
+from datetime import datetime, UTC
 from time import sleep
 
 
@@ -13,10 +13,22 @@ class OutGpio:
         self.description = description
         self.gpio_number = gpio_number
         self.reverted = reverted
+        self.__datetime_last_on = datetime.now()
+        self.__datetime_last_off = datetime.now()
+        self.__datetime_last_change = datetime.now(UTC)
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.OUT)
         logging.info("GPIO OUT " + name + " registered on " + str(self.gpio_number) + (" (reverted=true)" if self.reverted else ""))
         self.switch(False)
+
+
+    @property
+    def last_on(self) -> datetime:
+        return self.__datetime_last_on
+
+    @property
+    def last_off(self) -> datetime:
+        return self.__datetime_last_off
 
     def switch(self, on:bool):
         logging.info("setting OUT " + str(self.gpio_number) + " " + ("on" if on else "off"))
@@ -24,8 +36,12 @@ class OutGpio:
             on = not on
         if on:
             GPIO.output(self.gpio_number,GPIO.HIGH)
+            self.__datetime_last_on = datetime.now(UTC)
+            self.__datetime_last_change = datetime.now(UTC)
         else:
             GPIO.output(self.gpio_number,GPIO.LOW)
+            self.__datetime_last_off = datetime.now(UTC)
+            self.__datetime_last_change = datetime.now(UTC)
 
     def is_on(self) -> bool:
         return GPIO.input(self.gpio_number)
@@ -45,9 +61,9 @@ class InGpio:
         self.gpio_number = gpio_number
         self.reverted = reverted
         self.__on = None
-        self.__datetime_last_on = datetime.now()
-        self.__datetime_last_off = datetime.now()
-        self.__datetime_last_change = datetime.now()
+        self.__datetime_last_on = datetime.now(UTC)
+        self.__datetime_last_off = datetime.now(UTC)
+        self.__datetime_last_change = datetime.now(UTC)
         self.listener = lambda: None
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_number, GPIO.IN)
@@ -78,11 +94,11 @@ class InGpio:
         new_on = GPIO.input(self.gpio_number) == 1
         if new_on != self.__on:
             self.__on = new_on
-            self.__datetime_last_change = datetime.now()
+            self.__datetime_last_change = datetime.now(UTC)
             if new_on:
-                self.__datetime_last_on = datetime.now()
+                self.__datetime_last_on = datetime.now(UTC)
             else:
-                self.__datetime_last_off = datetime.now()
+                self.__datetime_last_off = datetime.now(UTC)
 
             msg = "GPIO IN " + self.name + " new effective state: " + str(self.on) + " last_change: " + self.__datetime_last_change.strftime("%Y-%m-%dT%H:%M:%S")
             config = "GPIO " + str(self.gpio_number) + ": " + str(GPIO.input(self.gpio_number)) + ("; reverted" if self.reverted else "")
