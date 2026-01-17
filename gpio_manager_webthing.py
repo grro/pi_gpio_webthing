@@ -145,13 +145,13 @@ class InThing(Thing):
         self.last_change.notify_of_external_update(self.in_gpio.last_change.strftime("%Y-%m-%dT%H:%M:%S"))
 
 
-def run_server(port: int, confs: List[Config]):
+def run_server(name: str, port: int, confs: List[Config]):
     in_leds = [OutThing(OutGpio(conf.port, conf.name, conf.description, conf.reverted)) for conf in confs if conf.type.lower() == 'out']
     out_leds = [InThing(InGpio(conf.port, conf.name, conf.description, conf.reverted)) for conf in confs if conf.type.lower() == 'in']
     leds = in_leds + out_leds
     server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
     web_server = GpioManagerWebServer(port=port+1, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
-    mcp_server = GpioManagerMCPServer("GPIO", port=port+2, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
+    mcp_server = GpioManagerMCPServer(name, port=port+2, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
     try:
         logging.info('starting the server on port ' + str(port))
         web_server.start()
@@ -170,8 +170,9 @@ if __name__ == '__main__':
         logging.basicConfig(format='%(asctime)s %(name)-20s: %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
         logging.getLogger('tornado.access').setLevel(logging.ERROR)
         logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
-        port = int(sys.argv[1])
-        gpio = sys.argv[2]
+        name = sys.argv[1]
+        port = int(sys.argv[2])
+        gpio = sys.argv[3]
         logging.info("gpio: " + gpio)
         confs = [Config.parse(conf) for conf in gpio.split("&")]
         run_server(port, confs)

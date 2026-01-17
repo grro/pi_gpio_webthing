@@ -1,5 +1,6 @@
 FROM python:3.11
 
+ENV name "GPIO"
 ENV port 8642
 ENV gpio ""
 
@@ -11,7 +12,7 @@ ADD requirements.txt /etc/app/.
 RUN pip install -r requirements.txt
 
 
-CMD python /etc/app/gpio_manager_webthing.py $port $gpio
+CMD python /etc/app/gpio_manager_webthing.py $name $port $gpio
 RUN /bin/bash
 
 
