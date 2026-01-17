@@ -175,7 +175,7 @@ if __name__ == '__main__':
         gpio = sys.argv[3]
         logging.info("gpio: " + gpio)
         confs = [Config.parse(conf) for conf in gpio.split("&")]
-        run_server(port, confs)
+        run_server(name, port, confs)
     except Exception as e:
         logging.error(str(e))
         raise e
