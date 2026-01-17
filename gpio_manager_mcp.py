@@ -1,6 +1,6 @@
 from typing import Dict
-from mcp_server import MCPServer
 from gpio_manager import OutGpio, InGpio
+from mcplib.server import MCPServer
 
 class GpioManagerMCPServer(MCPServer):
 
@@ -9,74 +9,66 @@ class GpioManagerMCPServer(MCPServer):
         self.out_gpios = out_gpios
         self.in_gpios = in_gpios
 
-        @self.mcp.resource("db://names/in")
-        def list_in_names() -> str:
-            """Returns a list of all available input sensor names."""
-            return ", ".join(self.in_gpios.keys())
+        @self.mcp.tool(name="list_names", description="Returns lists of all available input sensor and output actuator names.")
+        def list_names() -> str:
+            """Provides the names of all connected hardware pins to the AI."""
+            inputs = ", ".join(self.in_gpios.keys()) or "None"
+            outputs = ", ".join(self.out_gpios.keys()) or "None"
+            return f"Inputs: {inputs} | Outputs: {outputs}"
 
-        @self.mcp.resource("db://names/out")
-        def list_out_names() -> str:
-            """Returns a list of all available output actuator names."""
-            return ", ".join(self.out_gpios.keys())
+        @self.mcp.tool(name="get_description", description="Returns a human-readable description of what a specific pin is used for.")
+        def get_description(name: str) -> str:
+            """
+            Args:
+                name: The identifier of the pin.
+            """
+            if name in self.in_gpios:
+                return f"Input '{name}': {self.in_gpios[name].description}"
+            elif name in self.out_gpios:
+                return f"Output '{name}': {self.out_gpios[name].description}"
+            return f"Error: pin '{name}' not found."
 
-        # --- State and Telemetry Resources ---
-
-        @self.mcp.resource("db://{name}/state")
-        def get_pin_state(name: str) -> str:
-            """Returns the current logical state (ON/OFF) of a pin."""
+        @self.mcp.tool(name="get_state", description="Returns the current logical state and telemetry (timestamps) of a specific pin.")
+        def get_state(name: str) -> str:
+            """
+            Args:
+                name: The identifier of the pin (e.g., 'motion_sensor', 'door_light').
+            """
             try:
                 if name in self.in_gpios:
-                    return "ON" if self.in_gpios[name].on else "OFF"
+                    sensor = self.in_gpios[name]
+                    state = "ON" if sensor.on else "OFF"
+
+                    last_on = sensor.last_on.strftime("%Y-%m-%dT%H:%M:%S") if sensor.last_on else "Never"
+                    last_off = sensor.last_off.strftime("%Y-%m-%dT%H:%M:%S") if sensor.last_off else "Never"
+                    last_change = sensor.last_change.strftime("%Y-%m-%dT%H:%M:%S") if sensor.last_change else "Never"
+
+                    return (f"GPIO Input '{name}': {state}\n"
+                            f"Last ON: {last_on}\n"
+                            f"Last OFF: {last_off}\n"
+                            f"Last Change: {last_change}")
+
                 elif name in self.out_gpios:
-                    return "ON" if self.out_gpios[name].on else "OFF"
-                return f"Error: GPIO '{name}' not found."
+                    actuator = self.out_gpios[name]
+                    state = "ON" if actuator.on else "OFF"
+                    return f"GPIO Output '{name}': {state}"
+
+                return f"Error: pin '{name}' not found. Use 'list_names' to see available pins."
+
             except Exception as e:
                 return f"Error retrieving {name} state: {str(e)}"
 
-        @self.mcp.resource("db://{name}/last_on")
-        def get_last_on_time(name: str) -> str:
-            """Returns the ISO timestamp of when the input pin was last activated."""
-            try:
-                if name in self.in_gpios:
-                    return self.in_gpios[name].last_on.strftime("%Y-%m-%dT%H:%M:%S")
-                return f"Error: '{name}' is not an input GPIO."
-            except Exception as e:
-                return f"Error retrieving {name} last_on: {str(e)}"
-
-        @self.mcp.resource("db://{name}/last_off")
-        def get_last_off_time(name: str) -> str:
-            """Returns the ISO timestamp of when the input pin was last deactivated."""
-            try:
-                if name in self.in_gpios:
-                    return self.in_gpios[name].last_off.strftime("%Y-%m-%dT%H:%M:%S")
-                return f"Error: '{name}' is not an input GPIO."
-            except Exception as e:
-                return f"Error retrieving {name} last_off: {str(e)}"
-
-        @self.mcp.resource("db://{name}/last_change")
-        def get_last_change_time(name: str) -> str:
-            """Returns the ISO timestamp of the last state change (input only)."""
-            try:
-                if name in self.in_gpios:
-                    return self.in_gpios[name].last_change.strftime("%Y-%m-%dT%H:%M:%S")
-                return f"Error: '{name}' is not an input GPIO."
-            except Exception as e:
-                return f"Error retrieving {name} last_change: {str(e)}"
-
-        # --- Control Tools ---
-
-        @self.mcp.tool()
-        def set_value(name: str, on: bool) -> str:
+        @self.mcp.tool(name="set_state", description="Changes the state of an output actuator.")
+        def set_state(name: str, on: bool) -> str:
             """
-            Changes the state of an output pin.
-            :param name: Identifier (e.g., 'fan', 'led')
-            :param on: True to enable, False to disable
+            Args:
+                name: Identifier of the output (e.g., 'fan', 'led').
+                on: True to enable (ON), False to disable (OFF).
             """
             if name in self.out_gpios:
                 self.out_gpios[name].switch(on)
                 state = "ON" if on else "OFF"
                 return f"Successfully set {name} to {state}"
-            return f"GPIO {name} not found or is not an output."
+            return f"Error: pin '{name}' not found or is not an output actuator."
 
 # npx @modelcontextprotocol/inspector
-

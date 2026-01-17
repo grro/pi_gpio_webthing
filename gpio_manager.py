@@ -8,8 +8,9 @@ from time import sleep
 
 class OutGpio:
 
-    def __init__(self, gpio_number: int, name: str, reverted: bool):
+    def __init__(self, gpio_number: int, name: str, description: str, reverted: bool):
         self.name = name
+        self.description = description
         self.gpio_number = gpio_number
         self.reverted = reverted
         GPIO.setmode(GPIO.BCM)
@@ -38,8 +39,9 @@ class OutGpio:
 
 class InGpio:
 
-    def __init__(self, gpio_number: int, name: str, reverted: bool):
+    def __init__(self, gpio_number: int, name: str, description: str, reverted: bool):
         self.name = name
+        self.description = description
         self.gpio_number = gpio_number
         self.reverted = reverted
         self.__on = None

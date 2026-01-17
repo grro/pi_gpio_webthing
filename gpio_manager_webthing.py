@@ -13,6 +13,7 @@ from gpio_manager_mcp import GpioManagerMCPServer
 class Config:
     type: str
     name: str
+    description: str
     port: int
     reverted: bool
 
@@ -20,10 +21,10 @@ class Config:
     def parse(conf: str):
         logging.info("parsing " + conf)
         parts = conf.split(":")
-        if len(parts) > 3:
-            return Config(parts[0], parts[1], int(parts[2]), bool(parts[3]))
+        if len(parts) > 4:
+            return Config(parts[0], parts[1], parts[2], int(parts[3]), bool(parts[3]))
         else:
-            return Config(parts[0], parts[1], int(parts[2]), False)
+            return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
 
 
 
@@ -142,8 +143,8 @@ class InThing(Thing):
 
 
 def run_server(port: int, confs: List[Config]):
-    in_leds = [OutThing(OutGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'out']
-    out_leds = [InThing(InGpio(conf.port, conf.name, conf.reverted)) for conf in confs if conf.type.lower() == 'in']
+    in_leds = [OutThing(OutGpio(conf.port, conf.name, conf.description, conf.reverted)) for conf in confs if conf.type.lower() == 'out']
+    out_leds = [InThing(InGpio(conf.port, conf.name, conf.description, conf.reverted)) for conf in confs if conf.type.lower() == 'in']
     leds = in_leds + out_leds
     server = WebThingServer(MultipleThings(leds, "outs"), port=port, disable_host_validation=True)
     web_server = GpioManagerWebServer(port=port+1, in_gpios={thing.in_gpio.name: thing.in_gpio for thing in out_leds}, out_gpios={thing.out.name: thing.out for thing in in_leds})
