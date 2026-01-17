@@ -21,11 +21,14 @@ class Config:
     def parse(conf: str):
         logging.info("parsing " + conf)
         parts = conf.split(":")
-        if len(parts) > 4:
-            return Config(parts[0], parts[1], parts[2], int(parts[3]), bool(parts[3]))
-        else:
-            return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
-
+        try:
+            if len(parts) > 4:
+                return Config(parts[0], parts[1], parts[2], int(parts[3]), bool(parts[4]))
+            else:
+                return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
+        except Exception as e:
+            logging.error("error parsing " + conf + ": " + str(e))
+            raise e
 
 
 class OutThing(Thing):
