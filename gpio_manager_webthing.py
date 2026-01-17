@@ -27,7 +27,7 @@ class Config:
             else:
                 return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
         except Exception as e:
-            logging.error("error parsing " + conf + ":   " + str(e))
+            logging.error("error parsing '" + conf + "':   " + str(e))
             raise e
 
 
@@ -171,7 +171,9 @@ if __name__ == '__main__':
         logging.getLogger('tornado.access').setLevel(logging.ERROR)
         logging.getLogger('urllib3.connectionpool').setLevel(logging.WARNING)
         port = int(sys.argv[1])
-        confs = [Config.parse(conf) for conf in sys.argv[2].split("&")]
+        gpio = sys.argv[2]
+        logging.info("gpio: " + gpio)
+        confs = [Config.parse(conf) for conf in gpio.split("&")]
         run_server(port, confs)
     except Exception as e:
         logging.error(str(e))
