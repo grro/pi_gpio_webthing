@@ -27,7 +27,7 @@ class Config:
             else:
                 return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
         except Exception as e:
-            logging.error("error parsing " + conf + ": " + str(e))
+            logging.error("error parsing " + conf + ":   " + str(e))
             raise e
 
 
