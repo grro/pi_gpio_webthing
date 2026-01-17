@@ -174,6 +174,7 @@ if __name__ == '__main__':
         port = int(sys.argv[2])
         gpio = sys.argv[3]
         logging.info("gpio: " + gpio)
+        gpio = gpio.replace("_", " ")
         confs = [Config.parse(conf) for conf in gpio.split("&")]
         run_server(name, port, confs)
     except Exception as e:
