@@ -110,6 +110,6 @@ class GpioManagerMCPServer(MCPServer):
         status = "ON" if in_gpio.on else "OFF"
         identifier = in_gpio.description if in_gpio.description else "Unknown sensor"
 
-        self.mcp.push_log(f"Sensor '{identifier}' changed to {status}.", level="info")
-        self.mcp.push_resource_update("inputpin://state")
+        #self.mcp.push_log(f"Sensor '{identifier}' changed to {status}.", level="info")
+        #self.mcp.push_resource_update("inputpin://state")
 
