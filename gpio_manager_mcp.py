@@ -33,9 +33,20 @@ class GpioManagerMCPServer(MCPServer):
             return f"Error: pin '{name}' not found."
 
 
-        @self.mcp.resource("inputsensor://state")
+        @self.mcp.resource("inputpin://state")
         def get_input_sensor_state() -> str:
-            """Returns the current state of all input sensors."""
+            """
+            Retrieves the current logical state of all configured input sensors.
+
+            This method acts as a continuous MCP resource endpoint ('inputpin://state'),
+            providing a real-time overview of the system's hardware inputs. It iterates
+            through all registered input GPIOs and formats their data into a readable list.
+
+            Returns:
+                str: A formatted multiline string detailing the identifier, description,
+                     and current state (ON/OFF) of each sensor. If no input sensors are
+                     registered, it returns a clear fallback message.
+            """
             lines = ["Current GPIO Sensor Status:"]
             for name, sensor in self.in_gpios.items():
                 state = "ON" if sensor.on else "OFF"
@@ -100,5 +111,5 @@ class GpioManagerMCPServer(MCPServer):
         identifier = in_gpio.description if in_gpio.description else "Unknown sensor"
 
         self.mcp.push_log(f"Sensor '{identifier}' changed to {status}.", level="info")
-        self.mcp.push_resource_update("inputsensor://state")
+        self.mcp.push_resource_update("inputpin://state")
 
