@@ -24,8 +24,10 @@ class Config:
         try:
             if len(parts) > 4:
                 return Config(parts[0], parts[1], parts[2], int(parts[3]), bool(parts[4]))
-            else:
+            elif len(parts) > 3:
                 return Config(parts[0], parts[1], parts[2], int(parts[3]), False)
+            else:
+                return Config(parts[0], parts[1], parts[1], int(parts[2]), False)
         except Exception as e:
             logging.error("error parsing '" + conf + "':   " + str(e))
             raise e
