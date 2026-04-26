@@ -4,10 +4,13 @@ from mcplib.server import MCPServer
 
 class GpioManagerMCPServer(MCPServer):
 
+
     def __init__(self, name: str, port: int, in_gpios: Dict[str, InGpio], out_gpios: Dict[str, OutGpio]):
         super().__init__(name, port)
         self.out_gpios = out_gpios
         self.in_gpios = in_gpios
+        for in_gpio in in_gpios.values():
+            in_gpio.register_listener(lambda gpio=in_gpio: self.on_in_changed(gpio))
 
         @self.mcp.tool(name="list_names", description="Returns lists of all available input sensor and output actuator names.")
         def list_names() -> str:
@@ -29,6 +32,22 @@ class GpioManagerMCPServer(MCPServer):
                 return f"Output '{name}': {self.out_gpios[name].description}"
             return f"Error: pin '{name}' not found."
 
+
+        @self.mcp.resource("inputsensor://state")
+        def get_input_sensor_state() -> str:
+            """Returns the current state of all input sensors."""
+            lines = ["Current GPIO Sensor Status:"]
+            for name, sensor in self.in_gpios.items():
+                state = "ON" if sensor.on else "OFF"
+                desc = sensor.description or "No description"
+                lines.append(f"- {name} ({desc}): {state}")
+
+            if len(lines) == 1:
+                return "No sensors connected."
+
+            return "\n".join(lines)
+
+
         @self.mcp.tool(name="get_state", description="Returns the current logical state and activity timestamps (UTC) of a specific pin.")
         def get_state(name: str) -> str:
             """
@@ -48,11 +67,14 @@ class GpioManagerMCPServer(MCPServer):
                     last_on = device.last_on.strftime("%Y-%m-%dT%H:%M:%S") if device.last_on else "Never"
                     last_off = device.last_off.strftime("%Y-%m-%dT%H:%M:%S") if device.last_off else "Never"
                     last_change = device.last_change.strftime("%Y-%m-%dT%H:%M:%S") if device.last_change else "Never"
+                    description_line = f"\nDescription: {device.description}" if device.description else ""
 
                     return (f"Pin {dev_type} '{name}': {state}\n"
                             f"Last ON: {last_on} UTC\n"
                             f"Last OFF: {last_off} UTC\n"
-                            f"Last Change: {last_change} UTC")
+                            f"Last Change: {last_change} UTC"
+                            f"{description_line}")
+
 
                 return f"Error: pin '{name}' not found. Use 'list_names' to see available pins."
 
@@ -72,3 +94,11 @@ class GpioManagerMCPServer(MCPServer):
                 state = "ON" if on else "OFF"
                 return f"Successfully set {name} to {state}"
             return f"Error: pin '{name}' not found or is not an output actuator."
+
+    def on_in_changed(self, in_gpio: InGpio):
+        status = "ON" if in_gpio.on else "OFF"
+        identifier = in_gpio.description if in_gpio.description else "Unknown sensor"
+
+        self.mcp.push_log(f"Sensor '{identifier}' changed to {status}.", level="info")
+        self.mcp.push_resource_update("inputsensor://state")
+
